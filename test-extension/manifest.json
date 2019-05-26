@@ -19,6 +19,8 @@
         "activeTab",
         "tabs",
         "tabCapture",
-        "storage"
+        "storage",
+        "nativeMessaging",
+        "downloads"
     ]
 }
