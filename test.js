@@ -27,11 +27,13 @@ const puppeteer = require('puppeteer');
             `--user-data-dir=/home/jack/.config/google-chrome`,
         ],
         headless: false,
+        defaultViewport: null,
     });
     const page = await browser.newPage();
 
     // await page.goto('https://baidu.com', { waitUntil: 'networkidle2' });
-    await page.goto('http://192.168.68.1/got.mp4');
+    // await page.goto('http://192.168.68.1/got.mp4');
+    await page.goto('http://youtube.com');
 
 
     const targets = await browser.targets();
