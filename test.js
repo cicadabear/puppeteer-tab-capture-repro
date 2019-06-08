@@ -12,6 +12,7 @@ const puppeteer = require('puppeteer');
         ],
         args: [
             '--remote-debugging-port=9222',
+            // '--remote-debugging-address=192.168.68.139',
             `--whitelisted-extension-id=${extensionId}`,
             '--enable-usermedia-screen-capturing',
             '--allow-http-screen-capture',
@@ -33,7 +34,7 @@ const puppeteer = require('puppeteer');
 
     // await page.goto('https://baidu.com', { waitUntil: 'networkidle2' });
     // await page.goto('http://192.168.68.1/got.mp4');
-    await page.goto('http://youtube.com');
+    await page.goto('http://tw.gcp.cicadabear.cc/russia_cruise.mp4');
 
 
     const targets = await browser.targets();
