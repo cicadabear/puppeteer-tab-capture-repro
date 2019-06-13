@@ -13,6 +13,8 @@ import Queue
 import logging
 import base64
 from subprocess import Popen, PIPE
+import os
+from StringIO import StringIO
 
 try:
     import Tkinter
@@ -63,6 +65,37 @@ def read_thread_func(queue):
             send_message('{"echo": %s}' % text)
 
 
+class LogPipe(threading.Thread):
+
+    def __init__(self, level):
+        """Setup the object with a logger and a loglevel
+        and start the thread
+        """
+        threading.Thread.__init__(self)
+        self.daemon = False
+        self.level = level
+        self.fdRead, self.fdWrite = os.pipe()
+        self.pipeReader = os.fdopen(self.fdRead)
+        self.start()
+
+    def fileno(self):
+        """Return the write file descriptor of the pipe
+        """
+        return self.fdWrite
+
+    def run(self):
+        """Run the thread, logging everything.
+        """
+        for line in iter(self.pipeReader.readline, ''):
+            logging.log(self.level, line.strip('\n'))
+
+        self.pipeReader.close()
+
+    def close(self):
+        """Close the write end of the pipe.
+        """
+        os.close(self.fdWrite)
+
 class NativeMessagingWithoutWindow():
     def __init__(self, queue):
         self.queue = queue
@@ -71,6 +104,7 @@ class NativeMessagingWithoutWindow():
         # self.ffmpeg_proc = Popen(
         # ['ffmpeg', '-y', '-f', 'webm', '-i', 'pipe:', '-vcodec', 'mpeg4',
         #  '-qscale', '5', '-r', '24', 'video_host.avi'], stdin=PIPE)
+        self.logpipe = LogPipe(logging.INFO)
         self.ffmpeg_proc = Popen(
             ['ffmpeg', '-y', '-f', 'webm', '-i', 'pipe:', '-vb',
              '2500k',
@@ -89,7 +123,15 @@ class NativeMessagingWithoutWindow():
              # '-af', 'aresample=async=1',
              '-f',
              'flv',
-             'rtmp://192.168.68.138:1935/live/test'], stdin=PIPE)
+             # 'rtmp://127.0.0.1:1935/live/test'
+             'rtmp://txy.live-send.acg.tv/live-txy/?streamname=live_40407881_8851023&key=9908817a512cce85fe5527fd3f0dfcfd'
+             ], stdin=PIPE,stdout=self.logpipe,stderr=self.logpipe)
+        # output, error = self.ffmpeg_proc.communicate()
+        # self.log_subprocess_output(StringIO(output))
+        # self.log_subprocess_output(StringIO(error))
+        # with self.ffmpeg_proc:
+        #     self.log_subprocess_output(self.ffmpeg_proc.stdout)
+        #     self.log_subprocess_output(self.ffmpeg_proc.stderr)
 
     # def __del__(self):
     #     self.file.close()
@@ -114,12 +156,17 @@ class NativeMessagingWithoutWindow():
             # self.file.close()
             self.ffmpeg_proc.stdin.close()
             self.ffmpeg_proc.wait()
+            self.logpipe.close()
             return
         except:
             self.logger.exception("processMessages error")
             # self.send('error')
             return
         self.processMessages()
+
+    def log_subprocess_output(pipe):
+        for line in iter(pipe.readline, b''):  # b'\n'-separated lines
+            logging.info('got line from subprocess: %r', line)
 
     def send(self, msg):
         text = '{"text": "' + msg + '"}'
