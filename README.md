@@ -1,4 +1,4 @@
-Combination with [this project](https://medium.com/p/216ccfdde4db) making this project a streaming tool to streaming the tab page to a rtmp server.
+# Combination with [this project](https://medium.com/p/216ccfdde4db) making this project a streaming tool to streaming the tab page to a rtmp server.
 
 This is a minimal repository to help with debugging [this](https://github.com/GoogleChrome/puppeteer/issues/3651) issue.
 
